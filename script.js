@@ -186,7 +186,7 @@ function updateAdvice(score, redCategories) {
         document.getElementById("advice").style.color = hasRedScore ? "#c53030" : "#2e7d32"; // สีแดงเข้มหรือเขียว
      } else if (score = 3) {
         advice = "คะแนนต่ำ - ปานกลาง : Less Urgent เร่งด่วนน้อย ดูแลให้ผู้ป่วยได้เข้าพบแพทย์ ภายใน 30 นาที พร้อมทั้งแจ้งพยาบาลเพื่อประเมินอาการซ้ำ";
-        document.getElementById("advice").style.color = "#ff8f00"; // สีเหลือง    
+        document.getElementById("advice").style.color = "#ffde21"; // สีเหลือง    
     } else if (score >= 5 && score <= 6) {
         advice = "คะแนนปานกลาง : Urgent เร่งด่วนแจ้งพยาบาลเพื่อประเมินอาการซ้ำ และส่งต่อห้องฉุกเฉิน ER";
         document.getElementById("advice").style.color = "#ff8f00"; // สีส้ม
