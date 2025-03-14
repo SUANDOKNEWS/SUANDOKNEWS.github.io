@@ -181,18 +181,16 @@ function updateAdvice(score, redCategories) {
         totalScoreElement.style.color = "#c53030"; // สีแดง
     }
 
-    if (score >= 0 && score <= 2) {
-        advice = "คะแนนต่ำ : Non Urgent ไม่เร่งด่วน ให้การดูแลตรวจสอบอาการทั่วไป";
+if (score >= 0 && score <= 2) {
+        advice = "Non Urgent ไม่เร่งด่วน ให้การดูแลตรวจสอบอาการทั่วไป";
         document.getElementById("advice").style.color = hasRedScore ? "#c53030" : "#2e7d32"; // สีแดงเข้มหรือเขียว
-     } else if (score = 3) {
+    } else if (score >= 3 && score <= 4) {
         advice = "คะแนนต่ำ - ปานกลาง : Less Urgent เร่งด่วนน้อย ดูแลให้ผู้ป่วยได้เข้าพบแพทย์ ภายใน 30 นาที พร้อมทั้งแจ้งพยาบาลเพื่อประเมินอาการซ้ำ";
-        document.getElementById("advice").style.color = "#ffbf00"; // สีเหลือง    
     } else if (score >= 5 && score <= 6) {
         advice = "คะแนนปานกลาง : Urgent เร่งด่วนแจ้งพยาบาลเพื่อประเมินอาการซ้ำ และส่งต่อห้องฉุกเฉิน ER";
-        document.getElementById("advice").style.color = "#ff8f00"; // สีส้ม
+        document.getElementById("advice").style.color = "#ffbf00"; // สีเหลือง
     } else if (score >= 7) {
         advice = "คะแนนสูง : Emergent ฉุกเฉินแจ้งพยาบาลและแพทย์เพื่อส่งต่อผู้ป่วยให้ได้รับการดูแลขั้นวิกฤต";
-        document.getElementById("advice").style.color = "#c53030"; // สีแดง
     }
 
     document.getElementById("advice").innerHTML = advice + (hasRedScore ? "<br><br>" + redScoreText : "");
