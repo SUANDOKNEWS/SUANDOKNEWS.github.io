@@ -55,10 +55,9 @@ p {
 
 .options {
   display: flex;
-  flex-wrap: nowrap;
-  justify-content: space-between;
-  gap: 4px;
-  overflow-x: auto;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 8px;
   padding-bottom: 5px;
 }
 
@@ -75,9 +74,7 @@ button {
   font-weight: 500;
   font-size: 0.95em;
   box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-  flex: 1;
-  min-width: auto;
-  white-space: nowrap;
+  flex: 0 1 auto;
 }
 
 button:hover {
