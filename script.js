@@ -165,6 +165,7 @@ function updateAdvice(score, redCategories) {
     if (hasRedScore) {
         redScoreText = "<div class='red-score-alert'>⚠️ พบ RED score ในหมวด: ";
         redScoreText += redCategories.map(cat => getCategoryName(cat)).join(", ");
+        redScoreText += "<br>⚠️ แจ้งพยาบาลทันทีเพื่อพิจารณาส่งต่อห้องฉุกเฉิน ER";
         redScoreText += "<br>ต้องให้การติดตามอาการอย่างใกล้ชิด เนื่องจากผู้ป่วยมีอาการเปลี่ยนแปลงมาก</div>";
     }
 
@@ -181,16 +182,18 @@ function updateAdvice(score, redCategories) {
         totalScoreElement.style.color = "#c53030"; // สีแดง
     }
 
-if (score >= 0 && score <= 2) {
-        advice = "Non Urgent ไม่เร่งด่วน ให้การดูแลตรวจสอบอาการทั่วไป";
+    if (score >= 0 && score <= 2) {
+        advice = "Non Urgent ไม่เร่งด่วน ให้การดูแลตรวจสอบอาการทั่วไป แนะนำขั้นตอนการรับบริการ";
         document.getElementById("advice").style.color = hasRedScore ? "#c53030" : "#2e7d32"; // สีแดงเข้มหรือเขียว
     } else if (score >= 3 && score <= 4) {
-        advice = "คะแนนต่ำ - ปานกลาง : Less Urgent เร่งด่วนน้อย ดูแลให้ผู้ป่วยได้เข้าพบแพทย์ ภายใน 30 นาที พร้อมทั้งแจ้งพยาบาลเพื่อประเมินอาการซ้ำ";
+        advice = "คะแนนต่ำ - ปานกลาง : Less Urgent เร่งด่วนน้อย รายงานพยาบาลเพื่อประเมินซ้ำเพื่อพิจารณาให้พบแพทย์ ภายใน 30 นาที";
+        document.getElementById("advice").style.color = "#2e7d32"; // สีเขียว
     } else if (score >= 5 && score <= 6) {
-        advice = "คะแนนปานกลาง : Urgent เร่งด่วนแจ้งพยาบาลเพื่อประเมินอาการซ้ำ และส่งต่อห้องฉุกเฉิน ER";
+        advice = "คะแนนปานกลาง : Urgent เร่งด่วน แจ้งพยาบาลเพื่อประเมินอาการซ้ำและส่งต่อห้องฉุกเฉิน ER";
         document.getElementById("advice").style.color = "#ffbf00"; // สีเหลือง
     } else if (score >= 7) {
-        advice = "คะแนนสูง : Emergent ฉุกเฉินแจ้งพยาบาลและแพทย์เพื่อส่งต่อผู้ป่วยให้ได้รับการดูแลขั้นวิกฤต";
+        advice = "คะแนนสูง : Emergent ฉุกเฉิน แจ้งพยาบาลและแพทย์เพื่อส่งต่อผู้ป่วยให้ได้รับการดูแลขั้นวิกฤต";
+        document.getElementById("advice").style.color = "#c53030"; // สีแดง
     }
 
     document.getElementById("advice").innerHTML = advice + (hasRedScore ? "<br><br>" + redScoreText : "");
