@@ -113,6 +113,42 @@
             <button id="resetButton" onclick="resetScores()">รีเซ็ตคะแนนทั้งหมด</button>
         </div>
 
+        <div class="nursing-care-container">
+            <h3>คำแนะนำการพยาบาล</h3>
+            <div class="care-instructions">
+                <div class="care-level">
+                    <h4>คะแนน 0-2: Non Urgent ไม่เร่งด่วน</h4>
+                    <p>- ให้การดูแลตรวจสอบอาการทั่วไป</p>
+                    <p>- แนะนำขั้นตอนการรับบริการ</p>
+                    <p>- ติดตามอาการตามปกติ</p>
+                </div>
+                <div class="care-level">
+                    <h4>คะแนน 3-4: Less Urgent เร่งด่วนน้อย</h4>
+                    <p>- รายงานพยาบาลเพื่อประเมินซ้ำ</p>
+                    <p>- พิจารณาให้พบแพทย์ภายใน 30 นาที</p>
+                    <p>- เฝ้าระวังอาการเปลี่ยนแปลง</p>
+                </div>
+                <div class="care-level">
+                    <h4>คะแนน 5-6: Urgent เร่งด่วน</h4>
+                    <p>- แจ้งพยาบาลเพื่อประเมินอาการซ้ำ</p>
+                    <p>- พิจารณาส่งต่อห้องฉุกเฉิน ER</p>
+                    <p>- ติดตามอาการอย่างใกล้ชิด</p>
+                </div>
+                <div class="care-level">
+                    <h4>คะแนน 7 ขึ้นไป: Emergent ฉุกเฉิน</h4>
+                    <p>- แจ้งพยาบาลและแพทย์ทันที</p>
+                    <p>- ส่งต่อผู้ป่วยเพื่อการดูแลขั้นวิกฤต</p>
+                    <p>- เตรียมอุปกรณ์ฉุกเฉินที่จำเป็น</p>
+                </div>
+                <div class="care-level red-alert">
+                    <h4>⚠️ กรณีพบ RED Score (คะแนนข้อใดข้อหนึ่ง +3)</h4>
+                    <p>- แจ้งพยาบาลทันทีเพื่อประเมินอาการซ้ำ</p>
+                    <p>- พิจารณาส่งต่อห้องฉุกเฉิน ER</p>
+                    <p>- ติดตามอาการอย่างใกล้ชิด</p>
+                </div>
+            </div>
+        </div>
+
         <div class="statistics-container">
             <h3>ประวัติการบันทึก</h3>
             <table id="statisticsTable">
@@ -133,5 +169,5 @@
 
     <script src="script.js"></script>
 </body>
-
+    
 </html>
