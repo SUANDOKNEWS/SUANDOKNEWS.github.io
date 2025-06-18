@@ -53,6 +53,22 @@ p {
   font-size: 1.2em;
 }
 
+.scale-section {
+  margin: 15px 0;
+  padding: 15px;
+  background-color: #fafbfc;
+  border-radius: 8px;
+  border: 1px solid #e1e4e8;
+}
+
+.scale-title {
+  font-weight: 600;
+  color: #444;
+  margin-bottom: 10px !important;
+  font-size: 1.1em !important;
+  text-align: left !important;
+}
+
 .options {
   display: flex;
   flex-wrap: wrap;
