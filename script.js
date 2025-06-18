@@ -26,6 +26,27 @@ function selectOption(category, value, button) {
     updateScore();
 }
 
+// ฟังก์ชันเลือกตัวเลือกสำหรับ Oxygen saturation (ให้เลือกได้เพียง scale เดียว)
+function selectOxygenOption(scale, value, button) {
+    // ลบคลาส selected จากทุกปุ่มในทั้ง 2 scale
+    let scale1Buttons = document.getElementById('oxygen_scale1').getElementsByTagName("button");
+    let scale2Buttons = document.getElementById('oxygen_scale2').getElementsByTagName("button");
+    
+    for (let btn of scale1Buttons) {
+        btn.classList.remove("selected");
+    }
+    for (let btn of scale2Buttons) {
+        btn.classList.remove("selected");
+    }
+
+    // กำหนดคะแนนและเพิ่มคลาส selected ให้ปุ่มที่เลือก
+    scores.oxygen = value;
+    button.classList.add("selected");
+
+    // อัพเดทคะแนนรวม
+    updateScore();
+}
+
 // ฟังก์ชันตรวจสอบว่ามีคะแนน 3 ในหมวดใดบ้าง
 function checkRedScores() {
     let redCategories = [];
@@ -57,7 +78,7 @@ function saveStatistics() {
     const totalScore = Object.values(scores).reduce((a, b) => a + b, 0);
     const currentDate = new Date();
     const timeString = currentDate.toLocaleString('th-TH');
-    
+
     const stats = {
         hn: hnValue,
         score: totalScore,
@@ -69,9 +90,9 @@ function saveStatistics() {
     let allStats = JSON.parse(localStorage.getItem("statistics")) || [];
     allStats.push(stats);
     localStorage.setItem("statistics", JSON.stringify(allStats));
-    
+
     console.log("Statistics saved:", stats);
-    
+
     // อัพเดทตารางสถิติ
     updateStatisticsTable();
 }
@@ -81,7 +102,7 @@ function deleteStatistic(id) {
     let allStats = JSON.parse(localStorage.getItem("statistics")) || [];
     allStats = allStats.filter(stat => stat.id !== id);
     localStorage.setItem("statistics", JSON.stringify(allStats));
-    
+
     // อัพเดทตารางสถิติ
     updateStatisticsTable();
 }
@@ -90,23 +111,23 @@ function deleteStatistic(id) {
 function updateStatisticsTable() {
     const tableBody = document.getElementById("statisticsBody");
     const allStats = JSON.parse(localStorage.getItem("statistics")) || [];
-    
+
     // ล้างข้อมูลเก่าในตาราง
     tableBody.innerHTML = "";
-    
+
     // เพิ่มข้อมูลใหม่ในตาราง
     allStats.forEach(stat => {
         const row = document.createElement("tr");
-        
+
         const hnCell = document.createElement("td");
         hnCell.textContent = stat.hn || "-";
-        
+
         const scoreCell = document.createElement("td");
         scoreCell.textContent = stat.score;
-        
+
         const timeCell = document.createElement("td");
         timeCell.textContent = stat.time || "-";
-        
+
         const deleteCell = document.createElement("td");
         const deleteButton = document.createElement("button");
         deleteButton.textContent = "✕";
@@ -115,12 +136,12 @@ function updateStatisticsTable() {
             deleteStatistic(stat.id);
         };
         deleteCell.appendChild(deleteButton);
-        
+
         row.appendChild(hnCell);
         row.appendChild(scoreCell);
         row.appendChild(timeCell);
         row.appendChild(deleteCell);
-        
+
         tableBody.appendChild(row);
     });
 }
@@ -128,13 +149,13 @@ function updateStatisticsTable() {
 // เพิ่มปุ่มบันทึกคะแนน
 function addSubmitButton() {
     const buttonContainer = document.querySelector('.button-container');
-    
+
     // สร้างปุ่มบันทึกและวางในตำแหน่งที่เหมาะสม
     const submitButton = document.createElement('button');
     submitButton.id = 'submitButton';
     submitButton.textContent = 'บันทึกคะแนน';
     submitButton.onclick = saveStatistics;
-    
+
     // เพิ่มปุ่มไว้ด้านหน้าของปุ่มรีเซ็ต
     buttonContainer.insertBefore(submitButton, buttonContainer.firstChild);
 }
@@ -220,7 +241,7 @@ function resetScores() {
 
     // อัพเดทคะแนนรวม
     updateScore();
-    
+
     // ล้างข้อความคำแนะนำ
     document.getElementById('advice').innerHTML = '';
 }
@@ -228,10 +249,10 @@ function resetScores() {
 // เพิ่ม DOMContentLoaded เพื่อให้แน่ใจว่าสคริปต์ทำงานหลังจาก DOM โหลดเสร็จ
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM content loaded');
-    
+
     // เพิ่มปุ่มบันทึกคะแนน
     addSubmitButton();
-    
+
     // โหลดตารางสถิติ
     updateStatisticsTable();
 });
