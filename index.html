@@ -36,11 +36,28 @@
 
         <div class="question">
             <p><strong>ความอิ่มตัวของออกซิเจนในเลือด</strong></p>
-            <div class="options" id="oxygen">
-                <button onclick="selectOption('oxygen', 3, this)">≤91% <span class="score score-3">+3</span></button>
-                <button onclick="selectOption('oxygen', 2, this)">92-93% <span class="score score-2">+2</span></button>
-                <button onclick="selectOption('oxygen', 1, this)">94-95% <span class="score score-1">+1</span></button>
-                <button onclick="selectOption('oxygen', 0, this)">≥96% <span class="score score-0">0</span></button>
+            
+            <div class="scale-section">
+                <p class="scale-title">Scale 1:</p>
+                <div class="options" id="oxygen_scale1">
+                    <button onclick="selectOxygenOption('scale1', 3, this)">≤91% <span class="score score-3">+3</span></button>
+                    <button onclick="selectOxygenOption('scale1', 2, this)">92-93% <span class="score score-2">+2</span></button>
+                    <button onclick="selectOxygenOption('scale1', 1, this)">94-95% <span class="score score-1">+1</span></button>
+                    <button onclick="selectOxygenOption('scale1', 0, this)">≥96% <span class="score score-0">0</span></button>
+                </div>
+            </div>
+
+            <div class="scale-section">
+                <p class="scale-title">Scale 2:</p>
+                <div class="options" id="oxygen_scale2">
+                    <button onclick="selectOxygenOption('scale2', 3, this)">≤83% <span class="score score-3">+3</span></button>
+                    <button onclick="selectOxygenOption('scale2', 2, this)">84-85% <span class="score score-2">+2</span></button>
+                    <button onclick="selectOxygenOption('scale2', 1, this)">86-87% <span class="score score-1">+1</span></button>
+                    <button onclick="selectOxygenOption('scale2', 0, this)">88-92% ≥93% Air <span class="score score-0">0</span></button>
+                    <button onclick="selectOxygenOption('scale2', 1, this)">93-94% Oxygen <span class="score score-1">+1</span></button>
+                    <button onclick="selectOxygenOption('scale2', 2, this)">95-96% Oxygen <span class="score score-2">+2</span></button>
+                    <button onclick="selectOxygenOption('scale2', 3, this)">≥97% Oxygen <span class="score score-3">+3</span></button>
+                </div>
             </div>
         </div>
 
@@ -169,5 +186,5 @@
 
     <script src="script.js"></script>
 </body>
-    
+
 </html>
