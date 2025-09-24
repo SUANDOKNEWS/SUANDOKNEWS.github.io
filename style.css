@@ -1,6 +1,6 @@
 body {
   font-family: 'Sarabun', Arial, sans-serif;
-  background: #f5f7fa;
+  background-color: #f5f7fa;
   margin: 0;
   padding: 0;
   color: #444;
@@ -53,27 +53,12 @@ p {
   font-size: 1.2em;
 }
 
-.scale-section {
-  margin: 15px 0;
-  padding: 15px;
-  background-color: #fafbfc;
-  border-radius: 8px;
-  border: 1px solid #e1e4e8;
-}
-
-.scale-title {
-  font-weight: 600;
-  color: #444;
-  margin-bottom: 10px !important;
-  font-size: 1.1em !important;
-  text-align: left !important;
-}
-
 .options {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-  gap: 8px;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  gap: 4px;
+  overflow-x: auto;
   padding-bottom: 5px;
 }
 
@@ -90,7 +75,9 @@ button {
   font-weight: 500;
   font-size: 0.95em;
   box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-  flex: 0 1 auto;
+  flex: 1;
+  min-width: auto;
+  white-space: nowrap;
 }
 
 button:hover {
@@ -98,10 +85,10 @@ button:hover {
   transform: translateY(-1px);
 }
 
-button.active {
-  background-color: #4CAF50;
+button.selected {
+  background-color: #4CAF50; /* More vibrant green color */
   color: white;
-  border-color: #388E3C;
+  border-color: #388E3C; /* Darker green for border */
   box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
 }
 
@@ -137,22 +124,7 @@ button.active {
 #totalScore {
   font-weight: bold;
   font-size: 1.3em;
-  transition: color 0.3s ease;
-}
-
-#totalScore.green-score {
-  color: #2e7d32;
-  font-weight: bold;
-}
-
-#totalScore.yellow-score {
-  color: #f57c00;
-  font-weight: bold;
-}
-
-#totalScore.red-score {
-  color: #d32f2f;
-  font-weight: bold;
+  color: #3182ce;
 }
 
 #advice {
@@ -165,38 +137,18 @@ button.active {
   background-color: #f8fafc;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   line-height: 1.5;
+  color: #e65100; /* Darker orange */
 }
 
-#advice.incomplete {
-  color: #666;
-  background-color: #f8f9fa;
-}
-
-#advice.red-alert {
+.red-score-alert {
   background-color: #fff5f5;
-  color: #c53030;
   border-left: 4px solid #e53e3e;
-  animation: subtle-pulse 2s infinite;
-}
-
-#advice.high-score {
-  background-color: #fff5f5;
+  border-radius: 6px;
+  padding: 15px;
+  margin-top: 15px;
+  font-weight: 600;
   color: #c53030;
-}
-
-#advice.medium-score {
-  background-color: #fff8e1;
-  color: #ef6c00;
-}
-
-#advice.low-medium-score {
-  background-color: #fff3e0;
-  color: #ff8f00;
-}
-
-#advice.low-score {
-  background-color: #e8f5e9;
-  color: #2e7d32;
+  animation: subtle-pulse 2s infinite;
 }
 
 @keyframes subtle-pulse {
@@ -216,23 +168,20 @@ button.active {
   justify-content: center;
   align-items: center;
   margin: 20px 0;
-  gap: 10px;
 }
 
-#resetButton, #saveButton {
+#resetButton {
+  display: inline-block;
+  margin: 0 10px;
   padding: 12px 25px;
+  background-color: #f44336;
+  color: white;
   border: none;
   border-radius: 6px;
   font-weight: 600;
   font-size: 1em;
   transition: all 0.3s ease;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  cursor: pointer;
-}
-
-#resetButton {
-  background-color: #f44336;
-  color: white;
 }
 
 #resetButton:hover {
@@ -241,142 +190,122 @@ button.active {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-#saveButton {
+#submitButton {
+  display: inline-block;
+  margin: 0 10px;
+  padding: 12px 25px;
   background-color: #4CAF50;
   color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 1em;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-#saveButton:hover:not(:disabled) {
+#submitButton:hover {
   background-color: #388E3C;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-#saveButton:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
+.delete-btn {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  width: 25px;
+  height: 25px;
+  line-height: 1;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
 }
 
-.current-nursing-care {
-  margin: 25px 0;
-  padding: 20px;
-  border-radius: 8px;
-  background-color: #f8f9fa;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+.delete-btn:hover {
+  background-color: #d32f2f;
+  transform: scale(1.1);
 }
 
-.current-nursing-care h3 {
-  text-align: center;
-  color: #2d3748;
+/* สไตล์สำหรับช่องกรอก HN */
+#hnInput {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #e1e4e8;
+  border-radius: 6px;
+  font-family: 'Sarabun', Arial, sans-serif;
+  font-size: 1em;
   margin-bottom: 15px;
-  font-size: 1.2em;
 }
 
-.nursing-care-advice {
-  background: white;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  border-left: 4px solid #e2e8f0;
-  transition: all 0.3s ease;
-}
-
-.nursing-care-advice.low-score {
-  border-left-color: #2e7d32;
-  background-color: #f1f8e9;
-}
-
-.nursing-care-advice.low-medium-score,
-.nursing-care-advice.medium-score {
-  border-left-color: #ef6c00;
-  background-color: #fff8e1;
-}
-
-.nursing-care-advice.high-score,
-.nursing-care-advice.red-alert {
-  border-left-color: #d32f2f;
-  background-color: #fff5f5;
-}
-
-.nursing-care-advice h4 {
-  color: #2d3748;
-  margin: 0 0 10px 0;
-  padding-bottom: 8px;
-  border-bottom: 2px solid #e2e8f0;
-}
-
-.nursing-care-advice p {
-  margin: 8px 0;
-  color: #4a5568;
-  text-align: left;
-  font-size: 0.95em;
-}
-
-.nursing-care-advice.red-alert h4 {
-  color: #d32f2f;
-}
-
+/* สไตล์สำหรับคำแนะนำการพยาบาล */
 .nursing-care-container {
-  margin: 30px 0;
-  padding: 20px;
-  border-radius: 8px;
-  background-color: #f8f9fa;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    margin: 30px 0;
+    padding: 20px;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .nursing-care-container h3 {
-  text-align: center;
-  color: #2d3748;
-  margin-bottom: 20px;
+    text-align: center;
+    color: #2d3748;
+    margin-bottom: 20px;
 }
 
 .care-instructions {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-  padding: 10px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    padding: 10px;
 }
 
 .care-level.red-alert {
-  grid-column: 1 / -1;
+    grid-column: 1 / -1;
 }
 
 @media (max-width: 768px) {
-  .care-instructions {
-    grid-template-columns: 1fr;
-  }
+    .care-instructions {
+        grid-template-columns: 1fr;
+    }
 }
 
 .care-level {
-  background: white;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .care-level h4 {
-  color: #2d3748;
-  margin: 0 0 10px 0;
-  padding-bottom: 8px;
-  border-bottom: 2px solid #e2e8f0;
+    color: #2d3748;
+    margin: 0 0 10px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e2e8f0;
 }
 
 .care-level p {
-  margin: 8px 0;
-  color: #4a5568;
-  text-align: left;
-  font-size: 0.95em;
+    margin: 8px 0;
+    color: #4a5568;
+    text-align: left;
+    font-size: 0.95em;
 }
 
 .care-level.red-alert {
-  border-left: 4px solid #c53030;
-  background-color: #fff5f5;
+    border-left: 4px solid #c53030;
+    background-color: #fff5f5;
 }
 
 .care-level.red-alert h4 {
-  color: #c53030;
+    color: #c53030;
 }
 
+/* สไตล์สำหรับตารางสถิติ */
 .statistics-container {
   margin-top: 30px;
   border-top: 1px solid #e1e4e8;
@@ -419,33 +348,6 @@ button.active {
   border-bottom: none;
 }
 
-.delete-btn {
-  background-color: #ff4757;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  font-size: 14px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto;
-}
-
-.delete-btn:hover {
-  background-color: #ff3742;
-  transform: scale(1.1);
-  box-shadow: 0 2px 8px rgba(255, 71, 87, 0.3);
-}
-
-.delete-btn:active {
-  transform: scale(0.95);
-}
-
 @media (max-width: 768px) {
   .container {
     width: 95%;
@@ -461,15 +363,9 @@ button.active {
     align-items: center;
   }
 
-  #resetButton, #saveButton {
+  #resetButton {
     width: auto;
     display: block;
-  }
-
-  .delete-btn {
-    width: 25px;
-    height: 25px;
-    font-size: 12px;
   }
 
   .options {
