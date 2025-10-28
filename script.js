@@ -1,4 +1,5 @@
 
+
 // ตัวแปรเก็บคะแนนของแต่ละหมวด
 let scores = {
     respiratory: 0,
@@ -9,6 +10,9 @@ let scores = {
     heart_rate: 0,
     avpu: 0
 };
+
+// ตัวแปรเก็บว่าเลือก scale ไหนอยู่
+let selectedOxygenScale = null;
 
 // ฟังก์ชันเลือกตัวเลือกและกำหนดคะแนน
 function selectOption(category, value, button) {
@@ -21,6 +25,28 @@ function selectOption(category, value, button) {
     // กำหนดคะแนนและเพิ่มคลาส selected ให้ปุ่มที่เลือก
     scores[category] = value;
     button.classList.add("selected");
+
+    // อัพเดทคะแนนรวม
+    updateScore();
+}
+
+// ฟังก์ชันเฉพาะสำหรับเลือกค่าออกซิเจน
+function selectOxygenOption(scale, value, button) {
+    // ลบ selected จากทั้ง scale 1 และ scale 2
+    let scale1Buttons = document.getElementById('oxygen_scale1').getElementsByTagName("button");
+    let scale2Buttons = document.getElementById('oxygen_scale2').getElementsByTagName("button");
+    
+    for (let btn of scale1Buttons) {
+        btn.classList.remove("selected");
+    }
+    for (let btn of scale2Buttons) {
+        btn.classList.remove("selected");
+    }
+
+    // กำหนดคะแนนและเพิ่มคลาส selected ให้ปุ่มที่เลือก
+    scores.oxygen = value;
+    button.classList.add("selected");
+    selectedOxygenScale = scale;
 
     // อัพเดทคะแนนรวม
     updateScore();
@@ -125,32 +151,15 @@ function updateStatisticsTable() {
     });
 }
 
-// เพิ่มปุ่มบันทึกคะแนน
-function addSubmitButton() {
-    const buttonContainer = document.querySelector('.button-container');
-
-    // สร้างปุ่มบันทึกและวางในตำแหน่งที่เหมาะสม
-    const submitButton = document.createElement('button');
-    submitButton.id = 'submitButton';
-    submitButton.textContent = 'บันทึกคะแนน';
-    submitButton.onclick = saveStatistics;
-
-    // เพิ่มปุ่มไว้ด้านหน้าของปุ่มรีเซ็ต
-    buttonContainer.insertBefore(submitButton, buttonContainer.firstChild);
-}
-
 // ฟังก์ชันคำนวณคะแนนรวม
 function updateScore() {
     // รวมคะแนนทั้งหมด
     let totalScore = Object.values(scores).reduce((a, b) => a + b, 0);
     document.getElementById("totalScore").innerText = totalScore;
-
-    // เก็บข้อมูลว่าคะแนนมีการเปลี่ยนแปลง
-    scoreUpdated = true;
-
+    
     // ตรวจสอบ RED score
     let redCategories = checkRedScores();
-
+    
     // แสดงคำแนะนำตามระดับคะแนน
     updateAdvice(totalScore, redCategories);
 }
@@ -159,7 +168,7 @@ function updateScore() {
 function updateAdvice(score, redCategories) {
     let advice = "";
     let hasRedScore = redCategories.length > 0;
-
+    
     // สร้างข้อความแสดงรายการหมวดที่ได้คะแนน 3
     let redScoreText = "";
     if (hasRedScore) {
@@ -168,10 +177,10 @@ function updateAdvice(score, redCategories) {
         redScoreText += "<br>⚠️ แจ้งพยาบาลทันทีเพื่อพิจารณาส่งต่อห้องฉุกเฉิน ER";
         redScoreText += "<br>ต้องให้การติดตามอาการอย่างใกล้ชิด เนื่องจากผู้ป่วยมีอาการเปลี่ยนแปลงมาก</div>";
     }
-
+    
     // เปลี่ยนสีของคะแนนรวมตามระดับคะแนน
     const totalScoreElement = document.getElementById("totalScore");
-
+    
     if (score === 0) {
         totalScoreElement.style.color = "#2e7d32"; // สีเขียว
     } else if (score >= 1 && score <= 4) {
@@ -181,7 +190,7 @@ function updateAdvice(score, redCategories) {
     } else if (score >= 7) {
         totalScoreElement.style.color = "#c53030"; // สีแดง
     }
-
+    
     if (score >= 0 && score <= 2) {
         advice = "Non Urgent ไม่เร่งด่วน ให้การดูแลตรวจสอบอาการทั่วไป แนะนำขั้นตอนการรับบริการ";
         document.getElementById("advice").style.color = hasRedScore ? "#c53030" : "#2e7d32"; // สีแดงเข้มหรือเขียว
@@ -195,7 +204,7 @@ function updateAdvice(score, redCategories) {
         advice = "คะแนนสูง : Emergent ฉุกเฉิน แจ้งพยาบาลและแพทย์เพื่อส่งต่อผู้ป่วยให้ได้รับการดูแลขั้นวิกฤต";
         document.getElementById("advice").style.color = "#c53030"; // สีแดง
     }
-
+    
     document.getElementById("advice").innerHTML = advice + (hasRedScore ? "<br><br>" + redScoreText : "");
 }
 
@@ -211,16 +220,19 @@ function resetScores() {
         heart_rate: 0,
         avpu: 0
     };
-
+    
+    // รีเซ็ต oxygen scale
+    selectedOxygenScale = null;
+    
     // ลบ class selected จากทุกปุ่ม
-    const allButtons = document.querySelectorAll('.options button');
+    const allButtons = document.querySelectorAll('button');
     allButtons.forEach(button => {
         button.classList.remove('selected');
     });
-
+    
     // อัพเดทคะแนนรวม
     updateScore();
-
+    
     // ล้างข้อความคำแนะนำ
     document.getElementById('advice').innerHTML = '';
 }
@@ -228,10 +240,8 @@ function resetScores() {
 // เพิ่ม DOMContentLoaded เพื่อให้แน่ใจว่าสคริปต์ทำงานหลังจาก DOM โหลดเสร็จ
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM content loaded');
-
-    // เพิ่มปุ่มบันทึกคะแนน
-    addSubmitButton();
-
+    // รีเซ็ตคะแนนเมื่อโหลดหน้า
+    resetScores();
     // โหลดตารางสถิติ
     updateStatisticsTable();
 });
