@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="th">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,47 +7,58 @@
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
 </head>
-
 <body>
     <div class="container">
         <h1>SUANDOK NEWS</h1>
         <p>National Early Warning Score - สัญญาณเตือนภาวะวิกฤต</p>
 
-        <div class="question">
-            <p><strong>HN</strong></p>
-            <input type="text" id="hnInput" placeholder="กรอกหมายเลข HN" />
+        <div class="hn-section">
+            <label for="hnInput">เลขที่โรงพยาบาล (HN)</label>
+            <input type="text" id="hnInput" placeholder="กรอกเลขที่โรงพยาบาล" />
         </div>
 
         <div class="question">
             <p><strong>อัตราการหายใจ (ครั้ง/นาที)</strong></p>
             <div class="options" id="respiratory">
                 <button onclick="selectOption('respiratory', 3, this)">≤8 <span class="score score-3">+3</span></button>
-                <button onclick="selectOption('respiratory', 1, this)">9-11 <span
-                        class="score score-1">+1</span></button>
-                <button onclick="selectOption('respiratory', 0, this)">12-20 <span
-                        class="score score-0">0</span></button>
-                <button onclick="selectOption('respiratory', 2, this)">21-24 <span
-                        class="score score-2">+2</span></button>
-                <button onclick="selectOption('respiratory', 3, this)">≥25 <span
-                        class="score score-3">+3</span></button>
+                <button onclick="selectOption('respiratory', 1, this)">9-11 <span class="score score-1">+1</span></button>
+                <button onclick="selectOption('respiratory', 0, this)">12-20 <span class="score score-0">0</span></button>
+                <button onclick="selectOption('respiratory', 2, this)">21-24 <span class="score score-2">+2</span></button>
+                <button onclick="selectOption('respiratory', 3, this)">≥25 <span class="score score-3">+3</span></button>
             </div>
         </div>
 
         <div class="question">
             <p><strong>ความอิ่มตัวของออกซิเจนในเลือด</strong></p>
-            <div class="options" id="oxygen">
-                <button onclick="selectOption('oxygen', 3, this)">≤91% <span class="score score-3">+3</span></button>
-                <button onclick="selectOption('oxygen', 2, this)">92-93% <span class="score score-2">+2</span></button>
-                <button onclick="selectOption('oxygen', 1, this)">94-95% <span class="score score-1">+1</span></button>
-                <button onclick="selectOption('oxygen', 0, this)">≥96% <span class="score score-0">0</span></button>
+
+            <div class="scale-section">
+                <p class="scale-title">Scale 1 (ผู้ป่วยทั่วไป):</p>
+                <div class="options" id="oxygen_scale1">
+                    <button onclick="selectOxygenOption('scale1', 3, this)">≤91% <span class="score score-3">+3</span></button>
+                    <button onclick="selectOxygenOption('scale1', 2, this)">92-93% <span class="score score-2">+2</span></button>
+                    <button onclick="selectOxygenOption('scale1', 1, this)">94-95% <span class="score score-1">+1</span></button>
+                    <button onclick="selectOxygenOption('scale1', 0, this)">≥96% <span class="score score-0">0</span></button>
+                </div>
+            </div>
+
+            <div class="scale-section">
+                <p class="scale-title">Scale 2 (ผู้ป่วยที่ใช้ออกซิเจนเสริม):</p>
+                <div class="options" id="oxygen_scale2">
+                    <button onclick="selectOxygenOption('scale2', 3, this)">≤83% <span class="score score-3">+3</span></button>
+                    <button onclick="selectOxygenOption('scale2', 2, this)">84-85% <span class="score score-2">+2</span></button>
+                    <button onclick="selectOxygenOption('scale2', 1, this)">86-87% <span class="score score-1">+1</span></button>
+                    <button onclick="selectOxygenOption('scale2', 0, this)">88-92% หรือ ≥93% Air <span class="score score-0">0</span></button>
+                    <button onclick="selectOxygenOption('scale2', 1, this)">93-94% O₂ <span class="score score-1">+1</span></button>
+                    <button onclick="selectOxygenOption('scale2', 2, this)">95-96% O₂ <span class="score score-2">+2</span></button>
+                    <button onclick="selectOxygenOption('scale2', 3, this)">≥97% O₂ <span class="score score-3">+3</span></button>
+                </div>
             </div>
         </div>
 
         <div class="question">
             <p><strong>การใช้ออกซิเจนเสริม</strong></p>
             <div class="options" id="supp_oxygen">
-                <button onclick="selectOption('supp_oxygen', 0, this)">ไม่มี <span
-                        class="score score-0">0</span></button>
+                <button onclick="selectOption('supp_oxygen', 0, this)">ไม่มี <span class="score score-0">0</span></button>
                 <button onclick="selectOption('supp_oxygen', 2, this)">มี <span class="score score-2">+2</span></button>
             </div>
         </div>
@@ -56,16 +66,11 @@
         <div class="question">
             <p><strong>อุณหภูมิ</strong></p>
             <div class="options" id="temperature">
-                <button onclick="selectOption('temperature', 3, this)">≤35°C <span
-                        class="score score-3">+3</span></button>
-                <button onclick="selectOption('temperature', 1, this)">35.1-36°C <span
-                        class="score score-1">+1</span></button>
-                <button onclick="selectOption('temperature', 0, this)">36.1-38°C <span
-                        class="score score-0">0</span></button>
-                <button onclick="selectOption('temperature', 1, this)">38.1-39°C <span
-                        class="score score-1">+1</span></button>
-                <button onclick="selectOption('temperature', 2, this)">≥39.1°C <span
-                        class="score score-2">+2</span></button>
+                <button onclick="selectOption('temperature', 3, this)">≤35°C <span class="score score-3">+3</span></button>
+                <button onclick="selectOption('temperature', 1, this)">35.1-36°C <span class="score score-1">+1</span></button>
+                <button onclick="selectOption('temperature', 0, this)">36.1-38°C <span class="score score-0">0</span></button>
+                <button onclick="selectOption('temperature', 1, this)">38.1-39°C <span class="score score-1">+1</span></button>
+                <button onclick="selectOption('temperature', 2, this)">≥39.1°C <span class="score score-2">+2</span></button>
             </div>
         </div>
 
@@ -84,32 +89,26 @@
             <p><strong>อัตราการเต้นของหัวใจ (ครั้ง/นาที)</strong></p>
             <div class="options" id="heart_rate">
                 <button onclick="selectOption('heart_rate', 3, this)">≤40 <span class="score score-3">+3</span></button>
-                <button onclick="selectOption('heart_rate', 1, this)">41-50 <span
-                        class="score score-1">+1</span></button>
-                <button onclick="selectOption('heart_rate', 0, this)">51-90 <span
-                        class="score score-0">0</span></button>
-                <button onclick="selectOption('heart_rate', 1, this)">91-110 <span
-                        class="score score-1">+1</span></button>
-                <button onclick="selectOption('heart_rate', 2, this)">111-130 <span
-                        class="score score-2">+2</span></button>
-                <button onclick="selectOption('heart_rate', 3, this)">≥131 <span
-                        class="score score-3">+3</span></button>
+                <button onclick="selectOption('heart_rate', 1, this)">41-50 <span class="score score-1">+1</span></button>
+                <button onclick="selectOption('heart_rate', 0, this)">51-90 <span class="score score-0">0</span></button>
+                <button onclick="selectOption('heart_rate', 1, this)">91-110 <span class="score score-1">+1</span></button>
+                <button onclick="selectOption('heart_rate', 2, this)">111-130 <span class="score score-2">+2</span></button>
+                <button onclick="selectOption('heart_rate', 3, this)">≥131 <span class="score score-3">+3</span></button>
             </div>
         </div>
 
         <div class="question">
             <p><strong>ระดับความรู้สึกตัว (AVPU)</strong></p>
             <div class="options" id="avpu">
-                <button onclick="selectOption('avpu', 0, this)">รู้สึกตัวดี (A) <span
-                        class="score score-0">0</span></button>
-                <button onclick="selectOption('avpu', 3, this)">ตอบสนองต่อเสียง ความเจ็บปวด หรือไม่ตอบสนอง (V, P, U)
-                    <span class="score score-3">+3</span></button>
+                <button onclick="selectOption('avpu', 0, this)">รู้สึกตัวดี (A) <span class="score score-0">0</span></button>
+                <button onclick="selectOption('avpu', 3, this)">ตอบสนองต่อเสียง ความเจ็บปวด หรือไม่ตอบสนอง (V, P, U) <span class="score score-3">+3</span></button>
             </div>
         </div>
 
         <h2>คะแนนรวม: <span id="totalScore">0</span></h2>
         <p id="advice"></p>
         <div class="button-container">
+            <button id="submitButton" onclick="saveStatistics()">บันทึกคะแนน</button>
             <button id="resetButton" onclick="resetScores()">รีเซ็ตคะแนนทั้งหมด</button>
         </div>
 
@@ -154,7 +153,7 @@
             <table id="statisticsTable">
                 <thead>
                     <tr>
-                        <th>HN</th>
+                        <th>เลขที่โรงพยาบาล</th>
                         <th>คะแนน</th>
                         <th>เวลา</th>
                         <th>ลบ</th>
@@ -169,5 +168,4 @@
 
     <script src="script.js"></script>
 </body>
-
 </html>
