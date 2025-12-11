@@ -1,5 +1,5 @@
 // SUANDOK NEWS - National Early Warning Score Script
-// Modern, Enhanced Version (v3.0)
+// Modern, Enhanced Version (v3.1 - GForm Fix)
 
 // ตัวแปรเก็บคะแนนของแต่ละหมวด
 let scores = {
@@ -107,7 +107,7 @@ function getCategoryName(category) {
 
 // --- START: GOOGLE FORM INTEGRATION LOGIC ---
 
-// URL สำหรับส่งข้อมูล Google Form โดยตรง (ใช้ /formResponse)
+// URL สำหรับส่งข้อมูล Google Form โดยตรง
 const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdyP7JCRiBGqfdhUTVAcWXwZYjw5g_YkmAay1WgRL-WNRuOTA/formResponse";
 
 // Mapping ของฟิลด์ Google Form กับข้อมูลในแอปพลิเคชัน
@@ -120,27 +120,27 @@ const GOOGLE_FORM_ENTRY_MAP = {
 };
 
 /**
- * ฟังก์ชันส่งข้อมูลไปยัง Google Form
+ * ฟังก์ชันส่งข้อมูลไปยัง Google Form (แก้ไขให้ใช้ URLSearchParams เพื่อความเสถียร)
  * @param {object} stats - วัตถุข้อมูลสถิติ
  */
 async function sendToGoogleForm(stats) {
-    const formData = new FormData();
-    // เพิ่มข้อมูลลงใน FormData โดยใช้ entry ID ที่ถูกต้อง
-    formData.append(GOOGLE_FORM_ENTRY_MAP.location, stats.location);
-    formData.append(GOOGLE_FORM_ENTRY_MAP.hn, stats.hn);
-    formData.append(GOOGLE_FORM_ENTRY_MAP.score, stats.score);
-    formData.append(GOOGLE_FORM_ENTRY_MAP.time, stats.time);
+    // แก้ไข: ใช้ URLSearchParams แทน FormData
+    const formBody = new URLSearchParams();
+    formBody.append(GOOGLE_FORM_ENTRY_MAP.location, stats.location);
+    formBody.append(GOOGLE_FORM_ENTRY_MAP.hn, stats.hn);
+    formBody.append(GOOGLE_FORM_ENTRY_MAP.score, stats.score);
+    formBody.append(GOOGLE_FORM_ENTRY_MAP.time, stats.time);
 
     try {
         const response = await fetch(GOOGLE_FORM_URL, {
             method: 'POST',
             mode: 'no-cors', // สำคัญ: ใช้ 'no-cors' สำหรับการส่งข้อมูลไปยัง Google Forms
-            body: formData
+            // ส่ง URLSearchParams object โดยตรง fetch จะจัดการ Content-Type ให้เป็น application/x-www-form-urlencoded
+            body: formBody 
         });
         
-        // เนื่องจากใช้ 'no-cors' จึงไม่สามารถตรวจสอบสถานะ HTTP response ได้โดยตรง 
-        // แต่การ fetch สำเร็จ หมายความว่าข้อมูลถูกส่งออกไปแล้ว
         console.log("Data sent to Google Form (Status unknown due to no-cors mode).");
+        console.log("Sent Data:", Object.fromEntries(formBody.entries()));
         return true;
         
     } catch (error) {
@@ -444,7 +444,7 @@ function resetScores() {
 
 // เพิ่ม DOMContentLoaded
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('SUANDOK NEWS v3.0 loaded (Toggle Enabled & GForm Connected)');
+    console.log('SUANDOK NEWS v3.1 loaded (GForm Data Fix Applied)');
     resetScores();
     updateStatisticsTable();
     
