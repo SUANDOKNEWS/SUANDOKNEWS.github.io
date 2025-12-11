@@ -1,5 +1,5 @@
 // SUANDOK NEWS - National Early Warning Score Script
-// Modern, Enhanced Version
+// Modern, Enhanced Version (v3.0)
 
 // ตัวแปรเก็บคะแนนของแต่ละหมวด
 let scores = {
@@ -15,30 +15,44 @@ let scores = {
 // ตัวแปรเก็บว่าเลือก scale ไหนอยู่
 let selectedOxygenScale = null;
 
-// ฟังก์ชันเลือกตัวเลือกและกำหนดคะแนน
+// ฟังก์ชันเลือกตัวเลือกและกำหนดคะแนน (พร้อม Toggle Selection)
 function selectOption(category, value, button) {
+    // ตรวจสอบว่าปุ่มนี้ถูกเลือกอยู่แล้วหรือไม่
+    const isSelected = button.classList.contains("selected");
+
     const buttons = document.getElementById(category).getElementsByTagName("button");
+    // ลบการเลือกจากปุ่มทั้งหมดในหมวดหมู่นี้ก่อน
     for (let btn of buttons) {
         btn.classList.remove("selected");
     }
 
-    scores[category] = value;
-    button.classList.add("selected");
-    
-    // Add animation
-    button.style.transform = 'scale(1.05)';
-    setTimeout(() => {
-        button.style.transform = '';
-    }, 150);
+    if (isSelected) {
+        // ถ้าถูกเลือกอยู่แล้ว: ยกเลิกการเลือก (Toggle Off)
+        scores[category] = 0;
+    } else {
+        // ถ้ายังไม่ถูกเลือก: เลือกตามปกติ (Toggle On)
+        scores[category] = value;
+        button.classList.add("selected");
+        
+        // Add animation
+        button.style.transform = 'scale(1.05)';
+        setTimeout(() => {
+            button.style.transform = '';
+        }, 150);
+    }
 
     updateScore();
 }
 
-// ฟังก์ชันเฉพาะสำหรับเลือกค่าออกซิเจน
+// ฟังก์ชันเฉพาะสำหรับเลือกค่าออกซิเจน (พร้อม Toggle Selection)
 function selectOxygenOption(scale, value, button) {
+    // ตรวจสอบว่าปุ่มนี้ถูกเลือกอยู่แล้วหรือไม่
+    const isSelected = button.classList.contains("selected");
+
     const scale1Buttons = document.getElementById('oxygen_scale1').getElementsByTagName("button");
     const scale2Buttons = document.getElementById('oxygen_scale2').getElementsByTagName("button");
     
+    // ลบการเลือกทั้งหมดออกจากทั้งสอง Scale
     for (let btn of scale1Buttons) {
         btn.classList.remove("selected");
     }
@@ -46,15 +60,22 @@ function selectOxygenOption(scale, value, button) {
         btn.classList.remove("selected");
     }
 
-    scores.oxygen = value;
-    button.classList.add("selected");
-    selectedOxygenScale = scale;
+    if (isSelected) {
+        // ถ้าถูกเลือกอยู่แล้ว: ยกเลิกการเลือก (Toggle Off)
+        scores.oxygen = 0;
+        selectedOxygenScale = null;
+    } else {
+        // ถ้ายังไม่ถูกเลือก: เลือกตามปกติ (Toggle On)
+        scores.oxygen = value;
+        button.classList.add("selected");
+        selectedOxygenScale = scale;
 
-    // Add animation
-    button.style.transform = 'scale(1.05)';
-    setTimeout(() => {
-        button.style.transform = '';
-    }, 150);
+        // Add animation
+        button.style.transform = 'scale(1.05)';
+        setTimeout(() => {
+            button.style.transform = '';
+        }, 150);
+    }
 
     updateScore();
 }
@@ -84,10 +105,56 @@ function getCategoryName(category) {
     return categoryNames[category] || category;
 }
 
+// --- START: GOOGLE FORM INTEGRATION LOGIC ---
+
+// URL สำหรับส่งข้อมูล Google Form โดยตรง (ใช้ /formResponse)
+const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdyP7JCRiBGqfdhUTVAcWXwZYjw5g_YkmAay1WgRL-WNRuOTA/formResponse";
+
+// Mapping ของฟิลด์ Google Form กับข้อมูลในแอปพลิเคชัน
+// อ้างอิงจากข้อมูลที่คุณให้มา
+const GOOGLE_FORM_ENTRY_MAP = {
+    location: "entry.682625474", // สถานที่ที่ประเมิน
+    hn: "entry.1556940021",     // Hospital Number
+    score: "entry.1724905055",   // คะแนนรวม NEWs
+    time: "entry.358981393"      // เวลาที่ประเมิน
+};
+
+/**
+ * ฟังก์ชันส่งข้อมูลไปยัง Google Form
+ * @param {object} stats - วัตถุข้อมูลสถิติ
+ */
+async function sendToGoogleForm(stats) {
+    const formData = new FormData();
+    // เพิ่มข้อมูลลงใน FormData โดยใช้ entry ID ที่ถูกต้อง
+    formData.append(GOOGLE_FORM_ENTRY_MAP.location, stats.location);
+    formData.append(GOOGLE_FORM_ENTRY_MAP.hn, stats.hn);
+    formData.append(GOOGLE_FORM_ENTRY_MAP.score, stats.score);
+    formData.append(GOOGLE_FORM_ENTRY_MAP.time, stats.time);
+
+    try {
+        const response = await fetch(GOOGLE_FORM_URL, {
+            method: 'POST',
+            mode: 'no-cors', // สำคัญ: ใช้ 'no-cors' สำหรับการส่งข้อมูลไปยัง Google Forms
+            body: formData
+        });
+        
+        // เนื่องจากใช้ 'no-cors' จึงไม่สามารถตรวจสอบสถานะ HTTP response ได้โดยตรง 
+        // แต่การ fetch สำเร็จ หมายความว่าข้อมูลถูกส่งออกไปแล้ว
+        console.log("Data sent to Google Form (Status unknown due to no-cors mode).");
+        return true;
+        
+    } catch (error) {
+        console.error("Error sending data to Google Form:", error);
+        return false;
+    }
+}
+
+// --- END: GOOGLE FORM INTEGRATION LOGIC ---
+
 // ฟังก์ชันบันทึกสถิติ
 function saveStatistics() {
-    const locationValue = document.getElementById("locationInput").value;
-    const hnValue = document.getElementById("hnInput").value;
+    const locationValue = document.getElementById("locationInput").value || "-";
+    const hnValue = document.getElementById("hnInput").value || "-";
     const totalScore = Object.values(scores).reduce((a, b) => a + b, 0);
     const currentDate = new Date();
     const timeString = currentDate.toLocaleString('th-TH', {
@@ -105,19 +172,22 @@ function saveStatistics() {
         time: timeString,
         id: Date.now()
     };
+    
+    // CALL TO SEND DATA TO GOOGLE FORM
+    sendToGoogleForm(stats).then(() => {
+        // เพิ่มสถิติเข้าไปใน localStorage หลังจากพยายามส่งข้อมูลไปที่ Google Form
+        let allStats = JSON.parse(localStorage.getItem("newsStatistics")) || [];
+        allStats.push(stats);
+        localStorage.setItem("newsStatistics", JSON.stringify(allStats));
 
-    // เพิ่มสถิติเข้าไปใน localStorage
-    let allStats = JSON.parse(localStorage.getItem("newsStatistics")) || [];
-    allStats.push(stats);
-    localStorage.setItem("newsStatistics", JSON.stringify(allStats));
+        console.log("Statistics saved to LocalStorage and sent to Google Form:", stats);
 
-    console.log("Statistics saved:", stats);
+        // อัพเดทตารางสถิติ
+        updateStatisticsTable();
 
-    // อัพเดทตารางสถิติ
-    updateStatisticsTable();
-
-    // แสดง Toast notification
-    showToast("บันทึกคะแนนเรียบร้อยแล้ว");
+        // แสดง Toast notification
+        showToast("บันทึกคะแนนเรียบร้อยแล้ว");
+    });
 }
 
 // Toast notification
@@ -192,7 +262,9 @@ function updateStatisticsTable() {
         cell.innerHTML = `
             <div style="padding: 40px 20px; text-align: center; color: #9ca3af;">
                 <svg style="width: 48px; height: 48px; margin: 0 auto 12px; opacity: 0.5;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    <path d="M12 20V10"/>
+                    <path d="M18 20V4"/>
+                    <path d="M6 20v-4"/>
                 </svg>
                 <div>ยังไม่มีประวัติการบันทึก</div>
             </div>
@@ -372,7 +444,7 @@ function resetScores() {
 
 // เพิ่ม DOMContentLoaded
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('SUANDOK NEWS v2.0 loaded');
+    console.log('SUANDOK NEWS v3.0 loaded (Toggle Enabled & GForm Connected)');
     resetScores();
     updateStatisticsTable();
     
