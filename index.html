@@ -1,389 +1,307 @@
-// SUANDOK NEWS - National Early Warning Score Script
-// Modern, Enhanced Version
-
-// ตัวแปรเก็บคะแนนของแต่ละหมวด
-let scores = {
-    respiratory: 0,
-    oxygen: 0,
-    supp_oxygen: 0,
-    temperature: 0,
-    bp: 0,
-    heart_rate: 0,
-    avpu: 0
-};
-
-// ตัวแปรเก็บว่าเลือก scale ไหนอยู่
-let selectedOxygenScale = null;
-
-// ฟังก์ชันเลือกตัวเลือกและกำหนดคะแนน
-function selectOption(category, value, button) {
-    const buttons = document.getElementById(category).getElementsByTagName("button");
-    for (let btn of buttons) {
-        btn.classList.remove("selected");
-    }
-
-    scores[category] = value;
-    button.classList.add("selected");
-    
-    // Add animation
-    button.style.transform = 'scale(1.05)';
-    setTimeout(() => {
-        button.style.transform = '';
-    }, 150);
-
-    updateScore();
-}
-
-// ฟังก์ชันเฉพาะสำหรับเลือกค่าออกซิเจน
-function selectOxygenOption(scale, value, button) {
-    const scale1Buttons = document.getElementById('oxygen_scale1').getElementsByTagName("button");
-    const scale2Buttons = document.getElementById('oxygen_scale2').getElementsByTagName("button");
-    
-    for (let btn of scale1Buttons) {
-        btn.classList.remove("selected");
-    }
-    for (let btn of scale2Buttons) {
-        btn.classList.remove("selected");
-    }
-
-    scores.oxygen = value;
-    button.classList.add("selected");
-    selectedOxygenScale = scale;
-
-    // Add animation
-    button.style.transform = 'scale(1.05)';
-    setTimeout(() => {
-        button.style.transform = '';
-    }, 150);
-
-    updateScore();
-}
-
-// ฟังก์ชันตรวจสอบว่ามีคะแนน 3 ในหมวดใดบ้าง
-function checkRedScores() {
-    let redCategories = [];
-    for (let category in scores) {
-        if (scores[category] === 3) {
-            redCategories.push(category);
-        }
-    }
-    return redCategories;
-}
-
-// ฟังก์ชันแปลง category เป็นข้อความภาษาไทย
-function getCategoryName(category) {
-    const categoryNames = {
-        'respiratory': 'อัตราการหายใจ',
-        'oxygen': 'ความอิ่มตัวของออกซิเจน',
-        'supp_oxygen': 'การใช้ออกซิเจนเสริม',
-        'temperature': 'อุณหภูมิ',
-        'bp': 'ความดันโลหิต',
-        'heart_rate': 'อัตราการเต้นของหัวใจ',
-        'avpu': 'ระดับความรู้สึกตัว'
-    };
-    return categoryNames[category] || category;
-}
-
-// ฟังก์ชันบันทึกสถิติ
-function saveStatistics() {
-    const locationValue = document.getElementById("locationInput").value;
-    const hnValue = document.getElementById("hnInput").value;
-    const totalScore = Object.values(scores).reduce((a, b) => a + b, 0);
-    const currentDate = new Date();
-    const timeString = currentDate.toLocaleString('th-TH', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-
-    const stats = {
-        location: locationValue,
-        hn: hnValue,
-        score: totalScore,
-        time: timeString,
-        id: Date.now()
-    };
-
-    // เพิ่มสถิติเข้าไปใน localStorage
-    let allStats = JSON.parse(localStorage.getItem("newsStatistics")) || [];
-    allStats.push(stats);
-    localStorage.setItem("newsStatistics", JSON.stringify(allStats));
-
-    console.log("Statistics saved:", stats);
-
-    // อัพเดทตารางสถิติ
-    updateStatisticsTable();
-
-    // แสดง Toast notification
-    showToast("บันทึกคะแนนเรียบร้อยแล้ว");
-}
-
-// Toast notification
-function showToast(message) {
-    // Remove existing toast
-    const existingToast = document.querySelector('.toast');
-    if (existingToast) {
-        existingToast.remove();
-    }
-
-    const toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.innerHTML = `
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-            <polyline points="22 4 12 14.01 9 11.01"/>
-        </svg>
-        ${message}
-    `;
-    toast.style.cssText = `
-        position: fixed;
-        bottom: 30px;
-        left: 50%;
-        transform: translateX(-50%) translateY(100px);
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        color: white;
-        padding: 14px 24px;
-        border-radius: 12px;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        box-shadow: 0 10px 40px rgba(16, 185, 129, 0.4);
-        z-index: 1000;
-        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    `;
-    toast.querySelector('svg').style.cssText = 'width: 20px; height: 20px;';
-    
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.style.transform = 'translateX(-50%) translateY(0)';
-    }, 10);
-
-    setTimeout(() => {
-        toast.style.transform = 'translateX(-50%) translateY(100px)';
-        setTimeout(() => toast.remove(), 400);
-    }, 3000);
-}
-
-// ฟังก์ชันลบรายการสถิติ
-function deleteStatistic(id) {
-    if (confirm("คุณต้องการลบรายการนี้หรือไม่?")) {
-        let allStats = JSON.parse(localStorage.getItem("newsStatistics")) || [];
-        allStats = allStats.filter(stat => stat.id !== id);
-        localStorage.setItem("newsStatistics", JSON.stringify(allStats));
-        updateStatisticsTable();
-    }
-}
-
-// ฟังก์ชันแสดงตารางสถิติ
-function updateStatisticsTable() {
-    const tableBody = document.getElementById("statisticsBody");
-    const allStats = JSON.parse(localStorage.getItem("newsStatistics")) || [];
-
-    tableBody.innerHTML = "";
-
-    if (allStats.length === 0) {
-        const row = document.createElement("tr");
-        const cell = document.createElement("td");
-        cell.colSpan = 5;
-        cell.innerHTML = `
-            <div style="padding: 40px 20px; text-align: center; color: #9ca3af;">
-                <svg style="width: 48px; height: 48px; margin: 0 auto 12px; opacity: 0.5;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                </svg>
-                <div>ยังไม่มีประวัติการบันทึก</div>
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>National Early Warning Score (NEWS) - SUANDOK</title>
+    <meta name="description" content="ระบบประเมินสัญญาณเตือนภาวะวิกฤต SUANDOK NEWS สำหรับบุคลากรทางการแพทย์">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="page-wrapper">
+        <div class="container">
+            <!-- Header Section -->
+            <div class="header-section">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                    </svg>
+                </div>
+                <h1>SUANDOK NEWS</h1>
+                <p class="subtitle">National Early Warning Score - สัญญาณเตือนภาวะวิกฤต</p>
             </div>
-        `;
-        row.appendChild(cell);
-        tableBody.appendChild(row);
-        return;
-    }
 
-    // เรียงข้อมูลจากใหม่ไปเก่า
-    allStats.sort((a, b) => b.id - a.id);
+            <!-- Patient Info Section -->
+            <div class="patient-info-section">
+                <div class="info-card">
+                    <div class="info-icon location-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                    </div>
+                    <div class="info-content">
+                        <label for="locationInput">สถานที่ประเมิน</label>
+                        <input type="text" id="locationInput" placeholder="เช่น OPD, ER, Ward..." data-testid="input-location" />
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="info-icon hn-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                    </div>
+                    <div class="info-content">
+                        <label for="hnInput">เลขที่โรงพยาบาล (HN)</label>
+                        <input type="text" id="hnInput" placeholder="กรอกเลขที่โรงพยาบาล" data-testid="input-hn" />
+                    </div>
+                </div>
+            </div>
 
-    allStats.forEach(stat => {
-        const row = document.createElement("tr");
+            <!-- Scoring Section -->
+            <div class="scoring-section">
+                <div class="question" data-category="respiratory">
+                    <div class="question-header">
+                        <span class="question-number">1</span>
+                        <p><strong>อัตราการหายใจ (ครั้ง/นาที)</strong></p>
+                    </div>
+                    <div class="options" id="respiratory">
+                        <button onclick="selectOption('respiratory', 3, this)" data-testid="button-respiratory-1">≤8 <span class="score score-3">+3</span></button>
+                        <button onclick="selectOption('respiratory', 1, this)" data-testid="button-respiratory-2">9-11 <span class="score score-1">+1</span></button>
+                        <button onclick="selectOption('respiratory', 0, this)" data-testid="button-respiratory-3">12-20 <span class="score score-0">0</span></button>
+                        <button onclick="selectOption('respiratory', 2, this)" data-testid="button-respiratory-4">21-24 <span class="score score-2">+2</span></button>
+                        <button onclick="selectOption('respiratory', 3, this)" data-testid="button-respiratory-5">≥25 <span class="score score-3">+3</span></button>
+                    </div>
+                </div>
 
-        const locationCell = document.createElement("td");
-        locationCell.textContent = stat.location || "-";
-        locationCell.style.fontWeight = "500";
+                <div class="question" data-category="oxygen">
+                    <div class="question-header">
+                        <span class="question-number">2</span>
+                        <p><strong>ความอิ่มตัวของออกซิเจนในเลือด</strong></p>
+                    </div>
 
-        const hnCell = document.createElement("td");
-        hnCell.textContent = stat.hn || "-";
+                    <div class="scale-section scale-1">
+                        <p class="scale-title">
+                            <span class="scale-badge">Scale 1</span>
+                            ผู้ป่วยทั่วไป
+                        </p>
+                        <div class="options" id="oxygen_scale1">
+                            <button onclick="selectOxygenOption('scale1', 3, this)" data-testid="button-oxygen-scale1-1">≤91% <span class="score score-3">+3</span></button>
+                            <button onclick="selectOxygenOption('scale1', 2, this)" data-testid="button-oxygen-scale1-2">92-93% <span class="score score-2">+2</span></button>
+                            <button onclick="selectOxygenOption('scale1', 1, this)" data-testid="button-oxygen-scale1-3">94-95% <span class="score score-1">+1</span></button>
+                            <button onclick="selectOxygenOption('scale1', 0, this)" data-testid="button-oxygen-scale1-4">≥96% <span class="score score-0">0</span></button>
+                        </div>
+                    </div>
 
-        const scoreCell = document.createElement("td");
-        const scoreBadge = document.createElement("span");
-        scoreBadge.className = "score-badge";
-        scoreBadge.textContent = stat.score;
-        
-        if (stat.score >= 7) {
-            scoreBadge.classList.add("red");
-        } else if (stat.score >= 5) {
-            scoreBadge.classList.add("orange");
-        } else if (stat.score >= 3) {
-            scoreBadge.classList.add("yellow");
-        } else {
-            scoreBadge.classList.add("green");
-        }
-        scoreCell.appendChild(scoreBadge);
+                    <div class="scale-section scale-2">
+                        <p class="scale-title">
+                            <span class="scale-badge alt">Scale 2</span>
+                            ผู้ป่วยที่ใช้ออกซิเจนเสริม
+                        </p>
+                        <div class="options" id="oxygen_scale2">
+                            <button onclick="selectOxygenOption('scale2', 3, this)" data-testid="button-oxygen-scale2-1">≤83% <span class="score score-3">+3</span></button>
+                            <button onclick="selectOxygenOption('scale2', 2, this)" data-testid="button-oxygen-scale2-2">84-85% <span class="score score-2">+2</span></button>
+                            <button onclick="selectOxygenOption('scale2', 1, this)" data-testid="button-oxygen-scale2-3">86-87% <span class="score score-1">+1</span></button>
+                            <button onclick="selectOxygenOption('scale2', 0, this)" data-testid="button-oxygen-scale2-4">88-92% / ≥93% Air <span class="score score-0">0</span></button>
+                            <button onclick="selectOxygenOption('scale2', 1, this)" data-testid="button-oxygen-scale2-5">93-94% O₂ <span class="score score-1">+1</span></button>
+                            <button onclick="selectOxygenOption('scale2', 2, this)" data-testid="button-oxygen-scale2-6">95-96% O₂ <span class="score score-2">+2</span></button>
+                            <button onclick="selectOxygenOption('scale2', 3, this)" data-testid="button-oxygen-scale2-7">≥97% O₂ <span class="score score-3">+3</span></button>
+                        </div>
+                    </div>
+                </div>
 
-        const timeCell = document.createElement("td");
-        timeCell.textContent = stat.time || "-";
-        timeCell.style.fontSize = "0.85rem";
-        timeCell.style.color = "#6b7280";
+                <div class="question" data-category="supp_oxygen">
+                    <div class="question-header">
+                        <span class="question-number">3</span>
+                        <p><strong>การใช้ออกซิเจนเสริม</strong></p>
+                    </div>
+                    <div class="options centered" id="supp_oxygen">
+                        <button onclick="selectOption('supp_oxygen', 0, this)" data-testid="button-supp-oxygen-1">ไม่มี <span class="score score-0">0</span></button>
+                        <button onclick="selectOption('supp_oxygen', 2, this)" data-testid="button-supp-oxygen-2">มี <span class="score score-2">+2</span></button>
+                    </div>
+                </div>
 
-        const deleteCell = document.createElement("td");
-        const deleteButton = document.createElement("button");
-        deleteButton.innerHTML = "&#10005;";
-        deleteButton.className = "delete-btn";
-        deleteButton.onclick = function() {
-            deleteStatistic(stat.id);
-        };
-        deleteCell.appendChild(deleteButton);
+                <div class="question" data-category="temperature">
+                    <div class="question-header">
+                        <span class="question-number">4</span>
+                        <p><strong>อุณหภูมิ</strong></p>
+                    </div>
+                    <div class="options" id="temperature">
+                        <button onclick="selectOption('temperature', 3, this)" data-testid="button-temp-1">≤35°C <span class="score score-3">+3</span></button>
+                        <button onclick="selectOption('temperature', 1, this)" data-testid="button-temp-2">35.1-36°C <span class="score score-1">+1</span></button>
+                        <button onclick="selectOption('temperature', 0, this)" data-testid="button-temp-3">36.1-38°C <span class="score score-0">0</span></button>
+                        <button onclick="selectOption('temperature', 1, this)" data-testid="button-temp-4">38.1-39°C <span class="score score-1">+1</span></button>
+                        <button onclick="selectOption('temperature', 2, this)" data-testid="button-temp-5">≥39.1°C <span class="score score-2">+2</span></button>
+                    </div>
+                </div>
 
-        row.appendChild(locationCell);
-        row.appendChild(hnCell);
-        row.appendChild(scoreCell);
-        row.appendChild(timeCell);
-        row.appendChild(deleteCell);
+                <div class="question" data-category="bp">
+                    <div class="question-header">
+                        <span class="question-number">5</span>
+                        <p><strong>ความดันโลหิตซิสโตลิก (มม.ปรอท)</strong></p>
+                    </div>
+                    <div class="options" id="bp">
+                        <button onclick="selectOption('bp', 3, this)" data-testid="button-bp-1">≤90 <span class="score score-3">+3</span></button>
+                        <button onclick="selectOption('bp', 2, this)" data-testid="button-bp-2">91-100 <span class="score score-2">+2</span></button>
+                        <button onclick="selectOption('bp', 1, this)" data-testid="button-bp-3">101-110 <span class="score score-1">+1</span></button>
+                        <button onclick="selectOption('bp', 0, this)" data-testid="button-bp-4">111-219 <span class="score score-0">0</span></button>
+                        <button onclick="selectOption('bp', 3, this)" data-testid="button-bp-5">≥220 <span class="score score-3">+3</span></button>
+                    </div>
+                </div>
 
-        tableBody.appendChild(row);
-    });
-}
+                <div class="question" data-category="heart_rate">
+                    <div class="question-header">
+                        <span class="question-number">6</span>
+                        <p><strong>อัตราการเต้นของหัวใจ (ครั้ง/นาที)</strong></p>
+                    </div>
+                    <div class="options" id="heart_rate">
+                        <button onclick="selectOption('heart_rate', 3, this)" data-testid="button-hr-1">≤40 <span class="score score-3">+3</span></button>
+                        <button onclick="selectOption('heart_rate', 1, this)" data-testid="button-hr-2">41-50 <span class="score score-1">+1</span></button>
+                        <button onclick="selectOption('heart_rate', 0, this)" data-testid="button-hr-3">51-90 <span class="score score-0">0</span></button>
+                        <button onclick="selectOption('heart_rate', 1, this)" data-testid="button-hr-4">91-110 <span class="score score-1">+1</span></button>
+                        <button onclick="selectOption('heart_rate', 2, this)" data-testid="button-hr-5">111-130 <span class="score score-2">+2</span></button>
+                        <button onclick="selectOption('heart_rate', 3, this)" data-testid="button-hr-6">≥131 <span class="score score-3">+3</span></button>
+                    </div>
+                </div>
 
-// ฟังก์ชันคำนวณคะแนนรวม
-function updateScore() {
-    const totalScore = Object.values(scores).reduce((a, b) => a + b, 0);
-    const totalScoreElement = document.getElementById("totalScore");
-    const scoreCard = document.getElementById("scoreCard");
-    const scoreIndicator = document.getElementById("scoreIndicator");
-    
-    // Animate score change
-    totalScoreElement.style.transform = 'scale(1.1)';
-    setTimeout(() => {
-        totalScoreElement.style.transform = 'scale(1)';
-    }, 150);
-    
-    totalScoreElement.innerText = totalScore;
-    
-    // Update card styling based on score
-    scoreCard.className = 'total-score-card';
-    
-    if (totalScore <= 2) {
-        scoreCard.classList.add('level-green');
-        scoreIndicator.textContent = 'ไม่เร่งด่วน';
-        scoreIndicator.style.background = '#d1fae5';
-        scoreIndicator.style.color = '#059669';
-    } else if (totalScore <= 4) {
-        scoreCard.classList.add('level-yellow');
-        scoreIndicator.textContent = 'เร่งด่วนน้อย';
-        scoreIndicator.style.background = '#fef3c7';
-        scoreIndicator.style.color = '#d97706';
-    } else if (totalScore <= 6) {
-        scoreCard.classList.add('level-orange');
-        scoreIndicator.textContent = 'เร่งด่วน';
-        scoreIndicator.style.background = '#ffedd5';
-        scoreIndicator.style.color = '#ea580c';
-    } else {
-        scoreCard.classList.add('level-red');
-        scoreIndicator.textContent = 'ฉุกเฉิน';
-        scoreIndicator.style.background = '#fee2e2';
-        scoreIndicator.style.color = '#dc2626';
-    }
-    
-    const redCategories = checkRedScores();
-    updateAdvice(totalScore, redCategories);
-}
+                <div class="question last" data-category="avpu">
+                    <div class="question-header">
+                        <span class="question-number">7</span>
+                        <p><strong>ระดับความรู้สึกตัว (AVPU)</strong></p>
+                    </div>
+                    <div class="options centered" id="avpu">
+                        <button onclick="selectOption('avpu', 0, this)" data-testid="button-avpu-1">รู้สึกตัวดี (A) <span class="score score-0">0</span></button>
+                        <button onclick="selectOption('avpu', 3, this)" data-testid="button-avpu-2">ตอบสนองต่อเสียง/ความเจ็บปวด/ไม่ตอบสนอง (V, P, U) <span class="score score-3">+3</span></button>
+                    </div>
+                </div>
+            </div>
 
-// ฟังก์ชันแสดงคำแนะนำตามระดับคะแนน
-function updateAdvice(score, redCategories) {
-    let advice = "";
-    let hasRedScore = redCategories.length > 0;
-    
-    let redScoreText = "";
-    if (hasRedScore) {
-        redScoreText = `<div class='red-score-alert'>
-            <strong>พบ RED Score ในหมวด:</strong> ${redCategories.map(cat => getCategoryName(cat)).join(", ")}
-            <br>แจ้งพยาบาลทันทีเพื่อพิจารณาส่งต่อห้องฉุกเฉิน ER
-            <br>ต้องติดตามอาการอย่างใกล้ชิด
-        </div>`;
-    }
-    
-    const adviceElement = document.getElementById("advice");
-    
-    if (score >= 0 && score <= 2) {
-        advice = "<strong>Non Urgent</strong> ไม่เร่งด่วน — ให้การดูแลตรวจสอบอาการทั่วไป แนะนำขั้นตอนการรับบริการ";
-        adviceElement.style.background = hasRedScore ? '#fee2e2' : '#d1fae5';
-        adviceElement.style.color = hasRedScore ? '#dc2626' : '#059669';
-        adviceElement.style.borderLeft = hasRedScore ? '4px solid #ef4444' : '4px solid #10b981';
-    } else if (score >= 3 && score <= 4) {
-        advice = "<strong>Less Urgent</strong> เร่งด่วนน้อย — รายงานพยาบาลเพื่อประเมินซ้ำ พิจารณาให้พบแพทย์ภายใน 30 นาที";
-        adviceElement.style.background = '#fef3c7';
-        adviceElement.style.color = '#d97706';
-        adviceElement.style.borderLeft = '4px solid #f59e0b';
-    } else if (score >= 5 && score <= 6) {
-        advice = "<strong>Urgent</strong> เร่งด่วน — แจ้งพยาบาลเพื่อประเมินอาการซ้ำและส่งต่อห้องฉุกเฉิน ER";
-        adviceElement.style.background = '#ffedd5';
-        adviceElement.style.color = '#ea580c';
-        adviceElement.style.borderLeft = '4px solid #f97316';
-    } else if (score >= 7) {
-        advice = "<strong>Emergent</strong> ฉุกเฉิน — แจ้งพยาบาลและแพทย์เพื่อส่งต่อผู้ป่วยให้ได้รับการดูแลขั้นวิกฤต";
-        adviceElement.style.background = '#fee2e2';
-        adviceElement.style.color = '#dc2626';
-        adviceElement.style.borderLeft = '4px solid #ef4444';
-    }
-    
-    adviceElement.innerHTML = advice + (hasRedScore ? redScoreText : "");
-}
+            <!-- Result Section -->
+            <div class="result-section">
+                <div class="total-score-card" id="scoreCard">
+                    <div class="score-label">คะแนนรวม</div>
+                    <div class="score-value" id="totalScore" data-testid="text-total-score">0</div>
+                    <div class="score-indicator" id="scoreIndicator"></div>
+                </div>
+                <div id="advice" class="advice-box" data-testid="text-advice"></div>
+            </div>
 
-// ฟังก์ชันรีเซ็ตคะแนนทั้งหมด
-function resetScores() {
-    scores = {
-        respiratory: 0,
-        oxygen: 0,
-        supp_oxygen: 0,
-        temperature: 0,
-        bp: 0,
-        heart_rate: 0,
-        avpu: 0
-    };
-    
-    selectedOxygenScale = null;
-    
-    const allButtons = document.querySelectorAll('.options button');
-    allButtons.forEach(button => {
-        button.classList.remove('selected');
-    });
-    
-    document.getElementById('locationInput').value = '';
-    document.getElementById('hnInput').value = '';
-    
-    updateScore();
-    
-    const adviceElement = document.getElementById('advice');
-    adviceElement.innerHTML = '';
-    adviceElement.style.background = '#f9fafb';
-    adviceElement.style.borderLeft = 'none';
-}
+            <!-- Action Buttons -->
+            <div class="button-container">
+                <button id="submitButton" onclick="saveStatistics()" data-testid="button-submit">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                        <polyline points="17 21 17 13 7 13 7 21"/>
+                        <polyline points="7 3 7 8 15 8"/>
+                    </svg>
+                    บันทึกคะแนน
+                </button>
+                <button id="resetButton" onclick="resetScores()" data-testid="button-reset">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                        <path d="M3 3v5h5"/>
+                    </svg>
+                    รีเซ็ต
+                </button>
+            </div>
 
-// เพิ่ม DOMContentLoaded
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('SUANDOK NEWS v2.0 loaded');
-    resetScores();
-    updateStatisticsTable();
-    
-    // Add input focus effects
-    const inputs = document.querySelectorAll('input[type="text"]');
-    inputs.forEach(input => {
-        input.addEventListener('focus', function() {
-            this.parentElement.parentElement.style.transform = 'scale(1.02)';
-        });
-        input.addEventListener('blur', function() {
-            this.parentElement.parentElement.style.transform = 'scale(1)';
-        });
-    });
-});
+            <!-- Nursing Care Guidelines -->
+            <div class="nursing-care-container">
+                <div class="section-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10 9 9 9 8 9"/>
+                    </svg>
+                    <h3>คำแนะนำการพยาบาล</h3>
+                </div>
+                <div class="care-instructions">
+                    <div class="care-level level-green">
+                        <div class="level-header">
+                            <span class="level-badge green">0-2</span>
+                            <h4>Non Urgent ไม่เร่งด่วน</h4>
+                        </div>
+                        <ul>
+                            <li>ให้การดูแลตรวจสอบอาการทั่วไป</li>
+                            <li>แนะนำขั้นตอนการรับบริการ</li>
+                            <li>ติดตามอาการตามปกติ</li>
+                        </ul>
+                    </div>
+                    <div class="care-level level-yellow">
+                        <div class="level-header">
+                            <span class="level-badge yellow">3-4</span>
+                            <h4>Less Urgent เร่งด่วนน้อย</h4>
+                        </div>
+                        <ul>
+                            <li>รายงานพยาบาลเพื่อประเมินซ้ำ</li>
+                            <li>พิจารณาให้พบแพทย์ภายใน 30 นาที</li>
+                            <li>เฝ้าระวังอาการเปลี่ยนแปลง</li>
+                        </ul>
+                    </div>
+                    <div class="care-level level-orange">
+                        <div class="level-header">
+                            <span class="level-badge orange">5-6</span>
+                            <h4>Urgent เร่งด่วน</h4>
+                        </div>
+                        <ul>
+                            <li>แจ้งพยาบาลเพื่อประเมินอาการซ้ำ</li>
+                            <li>พิจารณาส่งต่อห้องฉุกเฉิน ER</li>
+                            <li>ติดตามอาการอย่างใกล้ชิด</li>
+                        </ul>
+                    </div>
+                    <div class="care-level level-red">
+                        <div class="level-header">
+                            <span class="level-badge red">7+</span>
+                            <h4>Emergent ฉุกเฉิน</h4>
+                        </div>
+                        <ul>
+                            <li>แจ้งพยาบาลและแพทย์ทันที</li>
+                            <li>ส่งต่อผู้ป่วยเพื่อการดูแลขั้นวิกฤต</li>
+                            <li>เตรียมอุปกรณ์ฉุกเฉินที่จำเป็น</li>
+                        </ul>
+                    </div>
+                    <div class="care-level level-critical">
+                        <div class="level-header">
+                            <span class="level-badge critical">RED</span>
+                            <h4>กรณีพบ RED Score (คะแนนข้อใดข้อหนึ่ง +3)</h4>
+                        </div>
+                        <ul>
+                            <li>แจ้งพยาบาลทันทีเพื่อประเมินอาการซ้ำ</li>
+                            <li>พิจารณาส่งต่อห้องฉุกเฉิน ER</li>
+                            <li>ติดตามอาการอย่างใกล้ชิด</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics History -->
+            <div class="statistics-container">
+                <div class="section-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 20V10"/>
+                        <path d="M18 20V4"/>
+                        <path d="M6 20v-4"/>
+                    </svg>
+                    <h3>ประวัติการบันทึก</h3>
+                </div>
+                <div class="table-wrapper">
+                    <table id="statisticsTable">
+                        <thead>
+                            <tr>
+                                <th>สถานที่</th>
+                                <th>HN</th>
+                                <th>คะแนน</th>
+                                <th>เวลา</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="statisticsBody" data-testid="table-statistics">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="footer">
+                <p>SUANDOK NEWS Assessment Tool</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
