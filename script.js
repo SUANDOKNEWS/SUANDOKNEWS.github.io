@@ -1,5 +1,5 @@
 // SUANDOK NEWS - National Early Warning Score Script
-// Modern, Enhanced Version (v3.1 - GForm Fix)
+// Modern, Enhanced Version (v5.0 - Correct Entry IDs)
 
 // ตัวแปรเก็บคะแนนของแต่ละหมวด
 let scores = {
@@ -17,24 +17,19 @@ let selectedOxygenScale = null;
 
 // ฟังก์ชันเลือกตัวเลือกและกำหนดคะแนน (พร้อม Toggle Selection)
 function selectOption(category, value, button) {
-    // ตรวจสอบว่าปุ่มนี้ถูกเลือกอยู่แล้วหรือไม่
     const isSelected = button.classList.contains("selected");
-
     const buttons = document.getElementById(category).getElementsByTagName("button");
-    // ลบการเลือกจากปุ่มทั้งหมดในหมวดหมู่นี้ก่อน
+    
     for (let btn of buttons) {
         btn.classList.remove("selected");
     }
 
     if (isSelected) {
-        // ถ้าถูกเลือกอยู่แล้ว: ยกเลิกการเลือก (Toggle Off)
         scores[category] = 0;
     } else {
-        // ถ้ายังไม่ถูกเลือก: เลือกตามปกติ (Toggle On)
         scores[category] = value;
         button.classList.add("selected");
         
-        // Add animation
         button.style.transform = 'scale(1.05)';
         setTimeout(() => {
             button.style.transform = '';
@@ -46,13 +41,10 @@ function selectOption(category, value, button) {
 
 // ฟังก์ชันเฉพาะสำหรับเลือกค่าออกซิเจน (พร้อม Toggle Selection)
 function selectOxygenOption(scale, value, button) {
-    // ตรวจสอบว่าปุ่มนี้ถูกเลือกอยู่แล้วหรือไม่
     const isSelected = button.classList.contains("selected");
-
     const scale1Buttons = document.getElementById('oxygen_scale1').getElementsByTagName("button");
     const scale2Buttons = document.getElementById('oxygen_scale2').getElementsByTagName("button");
     
-    // ลบการเลือกทั้งหมดออกจากทั้งสอง Scale
     for (let btn of scale1Buttons) {
         btn.classList.remove("selected");
     }
@@ -61,16 +53,13 @@ function selectOxygenOption(scale, value, button) {
     }
 
     if (isSelected) {
-        // ถ้าถูกเลือกอยู่แล้ว: ยกเลิกการเลือก (Toggle Off)
         scores.oxygen = 0;
         selectedOxygenScale = null;
     } else {
-        // ถ้ายังไม่ถูกเลือก: เลือกตามปกติ (Toggle On)
         scores.oxygen = value;
         button.classList.add("selected");
         selectedOxygenScale = scale;
 
-        // Add animation
         button.style.transform = 'scale(1.05)';
         setTimeout(() => {
             button.style.transform = '';
@@ -105,51 +94,89 @@ function getCategoryName(category) {
     return categoryNames[category] || category;
 }
 
-// --- START: GOOGLE FORM INTEGRATION LOGIC ---
+// --- START: GOOGLE FORM INTEGRATION (FIXED IDs) ---
 
-// URL สำหรับส่งข้อมูล Google Form โดยตรง
 const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdyP7JCRiBGqfdhUTVAcWXwZYjw5g_YkmAay1WgRL-WNRuOTA/formResponse";
 
-// Mapping ของฟิลด์ Google Form กับข้อมูลในแอปพลิเคชัน
-// อ้างอิงจากข้อมูลที่คุณให้มา
+// แก้ไขรหัส Entry ID ให้ถูกต้องตาม Source Code ของ Google Form
 const GOOGLE_FORM_ENTRY_MAP = {
-    location: "entry.682625474", // สถานที่ที่ประเมิน
-    hn: "entry.1556940021",     // Hospital Number
-    score: "entry.1724905055",   // คะแนนรวม NEWs
-    time: "entry.358981393"      // เวลาที่ประเมิน
+    location: "entry.1979543809", // รหัสที่ถูกต้องสำหรับ "สถานที่ที่ประเมิน"
+    hn: "entry.2024629124",       // รหัสที่ถูกต้องสำหรับ "Hospital Number"
+    score: "entry.1011439454",    // รหัสที่ถูกต้องสำหรับ "คะแนนรวม NEWs"
+    time: "entry.794074384"       // รหัสที่ถูกต้องสำหรับ "เวลาที่ประเมิน"
 };
 
 /**
- * ฟังก์ชันส่งข้อมูลไปยัง Google Form (แก้ไขให้ใช้ URLSearchParams เพื่อความเสถียร)
- * @param {object} stats - วัตถุข้อมูลสถิติ
+ * ฟังก์ชันส่งข้อมูลโดยใช้ Hidden Iframe
  */
-async function sendToGoogleForm(stats) {
-    // แก้ไข: ใช้ URLSearchParams แทน FormData
-    const formBody = new URLSearchParams();
-    formBody.append(GOOGLE_FORM_ENTRY_MAP.location, stats.location);
-    formBody.append(GOOGLE_FORM_ENTRY_MAP.hn, stats.hn);
-    formBody.append(GOOGLE_FORM_ENTRY_MAP.score, stats.score);
-    formBody.append(GOOGLE_FORM_ENTRY_MAP.time, stats.time);
+function sendToGoogleForm(stats) {
+    return new Promise((resolve, reject) => {
+        try {
+            // 1. สร้าง Iframe ที่ซ่อนอยู่
+            const iframeName = 'gform_iframe_' + Date.now();
+            const iframe = document.createElement('iframe');
+            iframe.name = iframeName;
+            iframe.style.display = 'none';
+            document.body.appendChild(iframe);
 
-    try {
-        const response = await fetch(GOOGLE_FORM_URL, {
-            method: 'POST',
-            mode: 'no-cors', // สำคัญ: ใช้ 'no-cors' สำหรับการส่งข้อมูลไปยัง Google Forms
-            // ส่ง URLSearchParams object โดยตรง fetch จะจัดการ Content-Type ให้เป็น application/x-www-form-urlencoded
-            body: formBody 
-        });
-        
-        console.log("Data sent to Google Form (Status unknown due to no-cors mode).");
-        console.log("Sent Data:", Object.fromEntries(formBody.entries()));
-        return true;
-        
-    } catch (error) {
-        console.error("Error sending data to Google Form:", error);
-        return false;
-    }
+            // 2. สร้าง Form
+            const form = document.createElement('form');
+            form.action = GOOGLE_FORM_URL;
+            form.method = 'POST';
+            form.target = iframeName;
+            form.style.display = 'none';
+
+            // 3. เตรียมข้อมูลที่จะส่ง
+            const dataToSend = {
+                [GOOGLE_FORM_ENTRY_MAP.location]: stats.location,
+                [GOOGLE_FORM_ENTRY_MAP.hn]: stats.hn,
+                [GOOGLE_FORM_ENTRY_MAP.score]: stats.score,
+                [GOOGLE_FORM_ENTRY_MAP.time]: stats.time
+            };
+
+            // 4. สร้าง Input fields
+            for (const key in dataToSend) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = dataToSend[key];
+                form.appendChild(input);
+            }
+
+            document.body.appendChild(form);
+
+            // 5. จัดการเมื่อส่งเสร็จ
+            let loaded = false;
+            iframe.onload = function() {
+                if (loaded) {
+                    document.body.removeChild(form);
+                    document.body.removeChild(iframe);
+                    resolve(true);
+                }
+                loaded = true;
+            };
+
+            // 6. ส่งฟอร์ม
+            form.submit();
+            console.log("Data submitted via hidden form:", stats);
+            
+            // Fallback: Resolve อัตโนมัติใน 1.5 วินาที
+            setTimeout(() => {
+                if(document.body.contains(form)) {
+                    document.body.removeChild(form);
+                    document.body.removeChild(iframe);
+                    resolve(true);
+                }
+            }, 1500);
+
+        } catch (error) {
+            console.error("Error submitting form:", error);
+            reject(error);
+        }
+    });
 }
 
-// --- END: GOOGLE FORM INTEGRATION LOGIC ---
+// --- END: GOOGLE FORM INTEGRATION ---
 
 // ฟังก์ชันบันทึกสถิติ
 function saveStatistics() {
@@ -168,31 +195,31 @@ function saveStatistics() {
     const stats = {
         location: locationValue,
         hn: hnValue,
-        score: totalScore,
+        score: totalScore.toString(),
         time: timeString,
         id: Date.now()
     };
     
-    // CALL TO SEND DATA TO GOOGLE FORM
+    // เรียกใช้ฟังก์ชันส่งข้อมูล
     sendToGoogleForm(stats).then(() => {
-        // เพิ่มสถิติเข้าไปใน localStorage หลังจากพยายามส่งข้อมูลไปที่ Google Form
         let allStats = JSON.parse(localStorage.getItem("newsStatistics")) || [];
         allStats.push(stats);
         localStorage.setItem("newsStatistics", JSON.stringify(allStats));
 
-        console.log("Statistics saved to LocalStorage and sent to Google Form:", stats);
-
-        // อัพเดทตารางสถิติ
         updateStatisticsTable();
-
-        // แสดง Toast notification
         showToast("บันทึกคะแนนเรียบร้อยแล้ว");
+    }).catch(err => {
+        console.error("Online submission failed, saving locally only");
+        let allStats = JSON.parse(localStorage.getItem("newsStatistics")) || [];
+        allStats.push(stats);
+        localStorage.setItem("newsStatistics", JSON.stringify(allStats));
+        updateStatisticsTable();
+        showToast("บันทึกในเครื่องเรียบร้อย (ออฟไลน์)");
     });
 }
 
 // Toast notification
 function showToast(message) {
-    // Remove existing toast
     const existingToast = document.querySelector('.toast');
     if (existingToast) {
         existingToast.remove();
@@ -274,7 +301,6 @@ function updateStatisticsTable() {
         return;
     }
 
-    // เรียงข้อมูลจากใหม่ไปเก่า
     allStats.sort((a, b) => b.id - a.id);
 
     allStats.forEach(stat => {
@@ -334,7 +360,6 @@ function updateScore() {
     const scoreCard = document.getElementById("scoreCard");
     const scoreIndicator = document.getElementById("scoreIndicator");
     
-    // Animate score change
     totalScoreElement.style.transform = 'scale(1.1)';
     setTimeout(() => {
         totalScoreElement.style.transform = 'scale(1)';
@@ -342,7 +367,6 @@ function updateScore() {
     
     totalScoreElement.innerText = totalScore;
     
-    // Update card styling based on score
     scoreCard.className = 'total-score-card';
     
     if (totalScore <= 2) {
@@ -371,7 +395,6 @@ function updateScore() {
     updateAdvice(totalScore, redCategories);
 }
 
-// ฟังก์ชันแสดงคำแนะนำตามระดับคะแนน
 function updateAdvice(score, redCategories) {
     let advice = "";
     let hasRedScore = redCategories.length > 0;
@@ -412,7 +435,6 @@ function updateAdvice(score, redCategories) {
     adviceElement.innerHTML = advice + (hasRedScore ? redScoreText : "");
 }
 
-// ฟังก์ชันรีเซ็ตคะแนนทั้งหมด
 function resetScores() {
     scores = {
         respiratory: 0,
@@ -442,13 +464,11 @@ function resetScores() {
     adviceElement.style.borderLeft = 'none';
 }
 
-// เพิ่ม DOMContentLoaded
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('SUANDOK NEWS v3.1 loaded (GForm Data Fix Applied)');
+    console.log('SUANDOK NEWS v5.0 loaded (Corrected Entry IDs)');
     resetScores();
     updateStatisticsTable();
     
-    // Add input focus effects
     const inputs = document.querySelectorAll('input[type="text"]');
     inputs.forEach(input => {
         input.addEventListener('focus', function() {
